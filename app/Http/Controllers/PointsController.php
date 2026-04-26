@@ -37,39 +37,57 @@ class PointsController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-{
-    //Validasi input
-    $request->validate(
-        [
-        'geometry_point' => 'required',
-        'name' => 'required|string|max:255',
-        'description' => 'required|string',
-        ],
-        [
-            'geometry_point.required' => 'Geometry point is required.',
-            'name.required' => 'Name is required.',
-            'name.string' => 'Name must be a string.',
-            'name.max' => 'Name must be at most 255 characters.',
-            'description.required' => 'Description is required.',
-            'description.string' => 'Description must be a string.',
-        ]
-    );
+    {
+        //Validasi input
+        $request->validate(
+            [
+                'geometry_point' => 'required',
+                'name' => 'required|string|max:255',
+                'description' => 'required|string',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ],
+            [
+                'geometry_point.required' => 'Geometry point is required.',
+                'name.required' => 'Name is required.',
+                'name.string' => 'Name must be a string.',
+                'name.max' => 'Name must be at most 255 characters.',
+                'description.required' => 'Description is required.',
+                'description.string' => 'Description must be a string.',
+                'image.image' => 'The image must be a valid image file.',
+                'image.mimes' => 'The image must be a file of type: jpeg, png, jpg, gif.',
+                'image.max' => 'The image may not be greater than 2048 kilobytes.',
+            ]
+        );
+        if (!is_dir('storage/images')) {
+            mkdir('./storage/images', 0777);
+        }
 
-    $data = [
-        'geom' => $request->geometry_point,
-        'name' => $request->name,
-        'description' => $request->description,
-    ];
+        // Get Uploaded Image
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $name_image = time() . "_point." . strtolower($image->getClientOriginalExtension());
+            $image->move('storage/images', $name_image);
+        } else {
+            $name_image = null;
+        }
+        // simpan data ke database
+        $data = [
+            'geom' => $request->geometry_point,
+            'name' => $request->name,
+            'description' => $request->description,
+            'image' => $name_image,
+        ];
 
-    // simpan data ke database
-    if (!$this->points->create($data)) {
-        // kembali ke halaman map
-        return redirect()->route('map')->with('error', 'Failed to add point.');
+
+        // simpan data ke database
+        if (!$this->points->create($data)) {
+            // kembali ke halaman map
+            return redirect()->route('map')->with('error', 'Failed to add point.');
+        }
+
+        // kembali ke halaman map dengan pesan sukses
+        return redirect()->route('map')->with('success', 'Point added successfully.');
     }
-
-    // kembali ke halaman map dengan pesan sukses
-    return redirect()->route('map')->with('success', 'Point added successfully.');
-}
 
     /**
      * Display the specified resource.
