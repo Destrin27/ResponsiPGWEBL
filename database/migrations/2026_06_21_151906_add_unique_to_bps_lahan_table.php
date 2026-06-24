@@ -12,6 +12,7 @@ return new class extends Migration
             $table->unique(['kecamatan', 'tahun'], 'bps_lahan_kecamatan_tahun_unique');
         });
     }
+    //
 
     public function down(): void
     {
