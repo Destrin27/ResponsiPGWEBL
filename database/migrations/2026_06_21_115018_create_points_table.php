@@ -22,9 +22,11 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Tambah kolom geometry Point dengan SRID 4326 (WGS84)
-        DB::statement('ALTER TABLE points ADD COLUMN geom geometry(Point, 4326)');
-        DB::statement('CREATE INDEX points_geom_idx ON points USING GIST(geom)');
+        // Hanya jalankan untuk PostgreSQL/PostGIS
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE points ADD COLUMN geom geometry(Point, 4326)');
+            DB::statement('CREATE INDEX points_geom_idx ON points USING GIST(geom)');
+        }
     }
 
     public function down(): void
