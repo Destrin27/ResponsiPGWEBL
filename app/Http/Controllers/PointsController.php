@@ -143,6 +143,7 @@ class PointsController extends Controller
         return redirect()->route('points.index')
             ->with('success', 'Data titik berhasil diupdate!');
     }
+    //
 
     // ───────────────────────── DELETE ─────────────────────────
     public function destroy($id)
